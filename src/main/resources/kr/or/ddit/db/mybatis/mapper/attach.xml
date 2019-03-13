@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="attach">
+  <!-- 첨부파일 등록 -->
+  <insert id="insertAttach" parameterType="AttachVO">
+  	insert into attach
+	values (attach_seq.nextval, #{filename}, #{realfilename}, #{posting_num})
+  </insert>
+  
+  <!-- 첨부파일 수정 -->
+  <update id="updateAttach" parameterType="AttachVO">
+  	update attach
+  	   set filename = nvl(#{filename, jdbcType=VARCHAR}, filename),
+  	   	   realfilename = nvl(#{realfilename, jdbcType=VARCHAR}, realfilename)
+  	 where attach_num = #{attach_num}
+  </update>
+  	
+  <!-- 첨부파일 삭제 -->
+  <delete id="deleteAttach" parameterType="Integer">
+  	delete from attach
+  	 where attach_num = #{attach_num} 
+  </delete>
+  
+  <!-- 첨부파일 조회 -->
+  <select id="selectAttach" resultType="AttachVO" parameterType="Integer">
+  	select *
+  	  from attach
+  	 where attach_num = #{attach_num}
+  </select>
+  
+  <!-- 해당 게시글 첨부파일 조회 -->
+  <select id="selectAttachList" resultType="AttachVO" parameterType="Integer">
+  	select *
+  	  from attach
+  	 where posting_num = #{posting_num}
+  </select>
+</mapper>

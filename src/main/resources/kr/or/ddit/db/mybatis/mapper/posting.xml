@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="posting">
+  <!-- 해당 게시판 전체 게시글 조회 -->
+  <select id="getAllPosting" resultType="PostingVO" parameterType="Integer">
+    select *
+      from posting
+     where board_num = #{board_num}
+  </select>
+  
+  <!-- 해당 게시판 전체 게시글 계층형으로 조회 -->
+  <select id="selectHierar" resultType="PostingVO" parameterType="Integer">
+  	select posting_num, parentposting_num, lpad(' ', 5*(level-1)) || posting_title as posting_title,
+  		   level as posting_level, posting_userid, posting_date
+ 	  from posting
+ 	 where board_num = #{board_num}
+	 start with parentposting_num is null
+   connect by prior posting_num = parentposting_num
+  </select>
+  
+  <!-- 게시글 level 업데이트 -->
+  <update id="updateLevel" parameterType="PostingVO">
+  	update posting
+	   set posting_level = #{posting_level}
+     where posting_num = #{posting_num}
+  </update>
+  
+  <!-- 특정 게시글 조회 -->
+  <select id="selectPosting" resultType="PostingVO" parameterType="Integer">
+  	select *
+  	  from posting
+  	 where posting_num = #{posting_num}
+  </select>
+    
+  <!-- 게시글 계층형으로 페이징 조회 -->
+  <!-- 파라미터가 두개 필요하기때문에 map으로 받음 -->
+  <select id="selectPostingPaging" resultType="PostingVO" parameterType="map">
+	select posting_num, parentposting_num, lpad(' ', 5*(posting_level-1)) || posting_title as posting_title,
+	       posting_level, posting_userid, posting_date, delete_exist
+	  from (select *
+	          from (select a.*, rownum rn
+	                  from (select posting.*
+	                          from posting
+	                         start with parentposting_num is null
+	                       connect by prior posting_num = parentposting_num
+	                         order siblings by posting_num desc) a) a
+	                 where rn between (#{page}-1)*#{pageSize}+1 and #{page}*#{pageSize})
+	where board_num = #{board_num}
+  </select>
+  
+  <!-- 전체 게시글 수 조회 -->
+  <select id="getPostingCnt" resultType="Integer" parameterType="Integer">
+  	select count(*)
+      from posting
+     where board_num = #{board_num}
+  </select>
+  
+  <!-- 게시글 등록 -->
+  <insert id="insertPosting" parameterType="PostingVO">
+  	<!-- insert되기전에 시퀀스값을 구하는 방법 -->
+   	<selectKey keyProperty="posting_num" resultType="Integer" order="BEFORE">
+   		select posting_seq.nextval from dual
+    </selectKey>
+    
+  	<!-- jdbcType을 명시적으로 선언해주면 값이 있으면 해당값을 넣고 값이 없으면 null값을 넣을 수 있음 -->
+  	insert into posting
+  	values (#{posting_num}, #{board_num}, #{posting_title}, #{posting_content},
+  	        #{posting_userid}, sysdate, 'N', #{parentposting_num, jdbcType=VARCHAR}, #{posting_level, jdbcType=VARCHAR})
+  </insert>
+  
+  <!-- 게시글 수정 -->
+  <update id="updatePosting" parameterType="PostingVO">
+  	update posting
+  	   set posting_title = #{posting_title},
+  		   posting_content = #{posting_content},
+  		   delete_exist = nvl(#{delete_exist, jdbcType=VARCHAR}, delete_exist),
+  		   parentposting_num = #{parentposting_num, jdbcType=VARCHAR}
+  	 where posting_num = #{posting_num}
+  </update>
+  	
+  <!-- 게시글 삭제 -->
+  <delete id="deletePosting" parameterType="Integer">
+  	delete from posting
+  	 where posting_num = #{posting_num} 
+  </delete>
+</mapper>

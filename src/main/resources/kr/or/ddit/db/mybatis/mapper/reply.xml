@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="reply">
+  <!-- 댓글 등록 -->
+  <insert id="insertReply" parameterType="ReplyVO">
+  	insert into reply
+	values (reply_seq.nextval, #{reply_content}, sysdate, 'N', #{posting_num}, #{reply_userid}, #{reply_admin})
+  </insert>
+  
+  <!-- 댓글 수정 -->
+  <update id="updateReply" parameterType="ReplyVO">
+  	update reply
+  	   set reply_content = nvl(#{reply_content, jdbcType=VARCHAR}, reply_content),
+  	   	   delete_exist = nvl(#{delete_exist, jdbcType=VARCHAR}, delete_exist)
+  	 where reply_num = #{reply_num}
+  </update>
+  	
+  <!-- 댓글 삭제 -->
+  <delete id="deleteReply" parameterType="Integer">
+  	delete from reply
+  	 where reply_num = #{reply_num} 
+  </delete>
+  
+  <!-- 댓글 조회 -->
+  <select id="selectReply" resultType="ReplyVO" parameterType="Integer">
+  	select *
+  	  from reply
+  	 where reply_num = #{reply_num}
+  </select>
+  
+  <!-- 해당 게시글 댓글 전체 조회 -->
+  <select id="getAllReply" resultType="ReplyVO" parameterType="Integer">
+  	select *
+  	  from reply
+  	 where posting_num = #{posting_num}
+  	 order by reply_date
+  </select>
+</mapper>

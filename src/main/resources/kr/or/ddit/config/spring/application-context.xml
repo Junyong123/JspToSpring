@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd">
+
+	<!-- @Service, @Repository 어노테이션 적용된 클래스 스캔-->
+	
+	<context:annotation-config/>
+	
+	<!-- @Controoler @Service @Repository @Component 스캔 -->
+	<!-- 모든 어노테이션 스캔 불가 -->
+	<context:component-scan base-package="kr.or.ddit" use-default-filters="false">
+		<!-- 해당 입력 어노테이션 스캔만 가능 -->
+		<context:include-filter type="annotation" expression="org.springframework.stereotype.Service"/>
+		<context:include-filter type="annotation" expression="org.springframework.stereotype.Repository"/>
+	</context:component-scan>
+	
+</beans>
